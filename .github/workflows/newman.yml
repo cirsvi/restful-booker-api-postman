@@ -25,10 +25,7 @@ jobs:
 
     - name: Run Postman collection
       continue-on-error: true
-      run:  newman run postman/RestfulBooker_API.postman_collection.json \
-            -e postman/RestfulBooker_Dev.postman_environment.json \
-            -r "cli,htmlextra" \
-            --reporter-htmlextra-export newman-report.html
+      run:  newman run postman/RestfulBooker_API.postman_collection.json -e postman/RestfulBooker_Dev.postman_environment.json -r "cli,htmlextra" --reporter-htmlextra-export newman-report.html
 
     - name: Upload test report
       if: always()
