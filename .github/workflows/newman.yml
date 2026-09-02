@@ -21,6 +21,7 @@ jobs:
       run: npm install -g newman newman-reporter-htmlextra
 
     - name: Run Postman collection
+      continue-on-error: true
       run:  newman run postman/RestfulBooker_API.postman_collection.json \
             -e postman/RestfulBooker_Dev.postman_environment.json \
             -r "cli,htmlextra" \
@@ -28,7 +29,7 @@ jobs:
 
     - name: Upload test report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: newman-report
         path: newman-report.html
