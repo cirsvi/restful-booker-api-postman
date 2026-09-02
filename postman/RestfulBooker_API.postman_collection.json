@@ -1,0 +1,1268 @@
+{
+  "info": {
+    "_postman_id": "384c8317-99d4-4ae7-94e6-424e34bc24d2",
+    "name": "RestfulBooker API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57787494"
+  },
+  "item": [
+    {
+      "name": "00 - Ping",
+      "item": [
+        {
+          "name": "API health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// BUG: GET /ping returns '201 Created' instead of '200 OK' for a health check\r\npm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response body is 'Created'\", () => {\r\n    pm.expect(pm.response.text()).to.include('OK');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ping",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ping"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 - Auth",
+      "item": [
+        {
+          "name": "Negative Tests",
+          "item": [
+            {
+              "name": "Invalid credentials",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /auth returns `200 OK` for invalid credentials instead of `401 Unauthorized`\r\npm.test(\"Status code is 401\", () => {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\nconst response = pm.response.json();\r\n\r\npm.test(\"Response contains reason 'Bad credentials'\", () => {\r\n    pm.expect(response.reason).to.eq(\"Bad credentials\");\r\n});\r\n\r\npm.test(\"Response does not contain token\", () => {\r\n    pm.expect(response).to.not.have.property('token');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"wrongpassword\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Missing username",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /auth returns `200 OK` for missing credentials instead '400 Bad Request` \r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\n// BUG: /auth returns 'Bad credentials' instead of 'Missing credentials' \r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response indicates missing credentials (username)\", () => {\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.include(\"username\");\r\n});\r\n\r\npm.test(\"Response does not contain token\", () => {\r\n    pm.expect(response).to.not.have.property('token');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"username\": \"admin\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Missing password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /auth returns `200 OK` for missing credentials instead '400 Bad Request` \r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\n// BUG: /auth returns 'Bad credentials' instead of 'Missing credentials' \r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response indicates missing credentials (password)\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.include(\"password\");\r\n});\r\n\r\npm.test(\"Response does not contain token\", () => {\r\n    pm.expect(response).to.not.have.property('token');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"password\": \"wrongpassword\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Empty body",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /auth returns `200 OK` for missing credentials instead '400 Bad Request` \r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response indicates missing credentials\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.match(/username|password/i);\r\n});\r\n\r\npm.test(\"Response does not contain token\", () => {\r\n    pm.expect(response).to.not.have.property('token');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Create token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst schema = {\r\n    \"type\": \"object\",\r\n    \"properties\": {\r\n        \"token\": {\r\n            \"type\": \"string\"\r\n        }\r\n    },\r\n    \"required\": [\"token\"]\r\n};\r\n\r\npm.test(\"Schema is valid\", () => {\r\n    pm.response.to.have.jsonSchema(schema);\r\n});\r\n\r\nconst response = pm.response.json();\r\n\r\npm.test(\"Token is not empty\", () => {\r\n    pm.expect(response.token).to.be.a(\"string\").and.to.not.be.empty;\r\n});\r\n\r\nif (response && response.token) {\r\n    pm.environment.set(\"token\", response.token);\r\n};"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Booking CRUD",
+      "item": [
+        {
+          "name": "Negative Tests",
+          "item": [
+            {
+              "name": "Create booking fails with invalid datatype for firstname",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /booking returns `500 Internal Server Error` for invalid firstname datatype instead of '400 Bad Request'\r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n})\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response contains reason (error) indicator related to firstname\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.include(\"firstname\");\r\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": {{$randomInt}},\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkIn}}\",\r\n        \"checkout\": \"{{checkOut}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create booking fails with negative totalprice",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /booking returns `200 OK` for negative totalprice instead of '400 Bad Request'\r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n})\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response contains reason (error) indicator related to totalprice\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.include(\"totalprice\");\r\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\",\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": -{{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkIn}}\",\r\n        \"checkout\": \"{{checkOut}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create booking with missing required field",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /booking returns `500 Internal Server Error` for missing firstname instead of '400 Bad Request'\r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n})\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response contains reason (error) indicator related to missing firstname\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.include(\"firstname\");\r\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkIn}}\",\r\n        \"checkout\": \"{{checkOut}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create booking with invalid checkin/checkout dates",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /booking returns `200 OK` for invalid check-in/check-out instead of '400 Bad Request'\r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n})\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response contains reason (error) indicator related to invalid date format\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.match(/checkin|checkout|date/i);\r\n});\r\n\r\npm.test(\"Unset checkIn and checkOut variables\", () => {\r\n    pm.environment.unset(\"checkIn\");\r\n    pm.environment.unset(\"checkOut\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\",\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"13-13-2026\",\r\n        \"checkout\": \"13-13-2027\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create booking fails when checkin > checkout",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /booking returns `200 OK` when check-in date if after check-out instead of '400 Bad Request'\r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n})\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response contains reason (error) indicator related to wrong dates (checkin > checkout)\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.match(/checkin|checkout|date/i);\r\n});\r\n\r\npm.test(\"Unset checkIn and checkOut variables\", () => {\r\n    pm.environment.unset(\"checkIn\");\r\n    pm.environment.unset(\"checkOut\");\r\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\",\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkOut}}\",\r\n        \"checkout\": \"{{checkIn}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create booking with really long firstname",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);\r\n\r\nlet firstName = ('a').repeat(1000);\r\npm.environment.set(\"firstName\", firstName);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /booking returns `200 OK` for really long firstname input (1000 characters) of '400 Bad Request'\r\npm.test(\"Status code is 400\", () => {\r\n    pm.response.to.have.status(400);\r\n})\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response contains reason (error) indicator related to long firstname input\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n    pm.expect(response.reason).to.include(\"firstname\");\r\n});\r\n\r\npm.test(\"Unset firstName variable\", () => {\r\n    pm.environment.unset(\"firstName\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": \"{{firstName}}\",\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkIn}}\",\r\n        \"checkout\": \"{{checkOut}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete booking that doesn't exist",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /booking/:id returns `405 Method Not Allowed` for non-existing ID instead of '404 Not Found'\r\npm.test(\"Status code is 404\", () => {\r\n    pm.response.to.have.status(404);\r\n})\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response indicates not found\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Cookie",
+                    "value": "token={{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/booking/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "99999"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update booking that doesn't exist",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "// BUG: /booking/:id returns `405 Method Not Allowed` for non-existing ID instead of '404 Not Found'\r\npm.test(\"Status code is 404\", () => {\r\n    pm.response.to.have.status(404);\r\n})\r\n\r\nlet response;\r\ntry {\r\n    response = pm.response.json();\r\n} catch (e) {\r\n    response = null;\r\n}\r\n\r\npm.test(\"Response indicates not found\", () => {\r\n    pm.expect(response).to.not.be.null;\r\n    pm.expect(response).to.be.an('object');\r\n    pm.expect(response).to.have.property(\"reason\");\r\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Cookie",
+                    "value": "token={{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\",\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkIn}}\",\r\n        \"checkout\": \"{{checkOut}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "99999"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get booking by ID that doesn't exist",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 404\", () => {\r\n    pm.response.to.have.status(404);\r\n})\r\n\r\npm.test(\"Response body is 'Not Found'\", () => {\r\n    pm.expect(pm.response.text()).to.eql(\"Not Found\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/booking/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "99999"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update booking with invalid token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 403\", () => {\r\n    pm.response.to.have.status(403);\r\n})\r\n\r\npm.test(\"Response body is 'Forbidden'\", () => {\r\n    pm.expect(pm.response.text()).to.eql(\"Forbidden\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "invalid",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Cookie",
+                    "value": "token=invalid"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{bookingId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update all booking details with invalid token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 403\", () => {\r\n    pm.response.to.have.status(403);\r\n})\r\n\r\npm.test(\"Response body is 'Forbidden'\", () => {\r\n    pm.expect(pm.response.text()).to.eql(\"Forbidden\");\r\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "invalid",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Cookie",
+                    "value": "token=invalid"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\",\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkIn}}\",\r\n        \"checkout\": \"{{checkOut}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/booking/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{bookingId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete booking with invalid token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status code is 403\", () => {\r\n    pm.response.to.have.status(403);\r\n})\r\n\r\npm.test(\"Response body is 'Forbidden'\", () => {\r\n    pm.expect(pm.response.text()).to.eql(\"Forbidden\");\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "invalid",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Cookie",
+                    "value": "token=invalid"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/booking/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "booking",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{bookingId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "List booking IDs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n})\r\n\r\nconst schema = {\r\n    \"type\": \"array\",\r\n    \"items\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"bookingid\": {\r\n                \"type\": \"number\"\r\n            }\r\n        },\r\n        \"required\": [\"bookingid\"],\r\n    }\r\n}\r\n\r\npm.test(\"Schema is valid\", () => {\r\n    pm.response.to.have.jsonSchema(schema);\r\n})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// BUG: POST /booking returns '200 OK' instead of '201 Created' for succesful creation\r\npm.test(\"Status code is 201\", () => {\r\n    pm.response.to.have.status(201);\r\n})\r\n\r\nconst schema = {\r\n    \"type\": \"object\",\r\n    \"properties\": {\r\n        \"bookingid\": { \r\n            \"type\": \"number\"\r\n            },\r\n        \"booking\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"firstname\": { \r\n                    \"type\": \"string\" },\r\n                \"lastname\": {\r\n                    \"type\": \"string\" },\r\n                \"totalprice\": {\r\n                    \"type\": \"number\"},\r\n                \"depositpaid\": {\r\n                    \"type\": \"boolean\"\r\n                },\r\n                \"bookingdates\": {\r\n                    \"type\": \"object\",\r\n                    \"properties\": {\r\n                        \"checkin\": {\r\n                            \"type\": \"string\" },\r\n                        \"checkout\": {\r\n                            \"type\": \"string\" },\r\n                        }\r\n                    },\r\n                \"additionalneeds\": {\r\n                    \"type\": \"string\"\r\n                },\r\n            }\r\n        }\r\n    }\r\n\r\n};\r\n\r\npm.test(\"Schema is valid\", () => {\r\n    pm.response.to.have.jsonSchema(schema);\r\n})\r\n\r\nconst response = pm.response.json();\r\nconst request = JSON.parse(pm.request.body.raw);\r\n\r\npm.test(\"Request data matches the response\", () => {\r\n    pm.expect(response.booking.firstname).to.eql(request.firstname);\r\n    pm.expect(response.booking.lastname).to.eql(request.lastname);\r\n    pm.expect(response.booking.totalprice).to.eql(request.totalprice);\r\n    pm.expect(response.booking.depositpaid).to.eql(request.depositpaid);\r\n    pm.expect(response.booking.bookingdates.checkin).to.eql(request.bookingdates.checkin);\r\n    pm.expect(response.booking.bookingdates.checkout).to.eql(request.bookingdates.checkout);\r\n    pm.expect(response.booking.additionalneeds).to.eql(request.additionalneeds);\r\n})\r\n\r\nif(response.booking){\r\n    pm.environment.set(\"bookingId\", response.bookingid);\r\n    pm.environment.set(\"firstName\", response.booking.firstname);\r\n    pm.environment.set(\"lastName\", response.booking.lastname);\r\n    pm.environment.set(\"totalPrice\", response.booking.totalprice);\r\n    pm.environment.set(\"depositPaid\", response.booking.depositpaid);\r\n    pm.environment.set(\"additionalNeeds\", response.booking.additionalneeds);\r\n}"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\",\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkIn}}\",\r\n        \"checkout\": \"{{checkOut}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get booking by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n})\r\n\r\nconst schema = {\r\n    \"type\": \"object\",\r\n    \"booking\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"firstname\": { \"type\": \"string\" },\r\n            \"lastname\": { \"type\": \"string\" },\r\n            \"totalprice\": { \"type\": \"number\" },\r\n            \"depositpaid\": { \"type\": \"boolean\" },\r\n            \"bookingdates\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                    \"checkin\": { \"type\": \"string\" },\r\n                    \"checkout\": { \"type\": \"string\" },\r\n                    }\r\n                },\r\n            \"additionalneeds\": { \"type\": \"string\" },\r\n        }\r\n    }\r\n};\r\n\r\npm.test(\"Schema is valid\", () => {\r\n    pm.response.to.have.jsonSchema(schema);\r\n})\r\n\r\nconst response = pm.response.json();\r\n\r\npm.test(\"Correct data is returned\", () => {\r\n    const expectedFirstName = pm.environment.get(\"firstName\");\r\n    const expectedLastName = pm.environment.get(\"lastName\");\r\n    const expectedTotalPrice = Number(pm.environment.get(\"totalPrice\"));\r\n    const expectedDepositPaid = Boolean(pm.environment.get(\"depositPaid\"));\r\n    const expectedCheckInDate = pm.environment.get(\"checkIn\");\r\n    const expectedCheckOutDate = pm.environment.get(\"checkOut\");\r\n    const expectedAddtionalInformation = pm.environment.get(\"additionalNeeds\");\r\n\r\n    pm.expect(response.firstname).to.eql(expectedFirstName);\r\n    pm.expect(response.lastname).to.eql(expectedLastName);\r\n    pm.expect(response.totalprice).to.eql(expectedTotalPrice);\r\n    pm.expect(response.depositpaid).to.eql(expectedDepositPaid);\r\n    pm.expect(response.bookingdates.checkin).to.eql(expectedCheckInDate);\r\n    pm.expect(response.bookingdates.checkout).to.eql(expectedCheckOutDate);\r\n    pm.expect(response.additionalneeds).to.eql(expectedAddtionalInformation);\r\n})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{bookingId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter booking ids by name and surname",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n})\r\n\r\nconst schema = {\r\n    \"type\": \"array\",\r\n    \"items\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"bookingid\": {\r\n                \"type\": \"number\"\r\n            }\r\n        },\r\n        \"required\": [\"bookingid\"],\r\n    }\r\n}\r\n\r\npm.test(\"Schema is valid\", () => {\r\n    pm.response.to.have.jsonSchema(schema);\r\n})\r\n\r\nconst response = pm.response.json();\r\nconst expectedBookingId = Number(pm.environment.get(\"bookingId\"));\r\n\r\npm.test(\"Correct booking id present\", () => {\r\n    let found = false;\r\n    for(let i = 0; i < response.length; i++) {\r\n        if(response[i].bookingid === expectedBookingId){\r\n            found = true;\r\n            break;\r\n        }\r\n    }\r\n    pm.expect(found).to.be.true;\r\n})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname={{firstName}}&lastname={{lastName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "{{firstName}}"
+                },
+                {
+                  "key": "lastname",
+                  "value": "{{lastName}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter booking ids by check in and check out",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n})\r\n\r\nconst schema = {\r\n    \"type\": \"array\",\r\n    \"items\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"bookingid\": {\r\n                \"type\": \"number\"\r\n            }\r\n        },\r\n        \"required\": [\"bookingid\"],\r\n    }\r\n}\r\n\r\npm.test(\"Schema is valid\", () => {\r\n    pm.response.to.have.jsonSchema(schema);\r\n})\r\n\r\n// BUG: Filtering by check-in-check-out returns unrelated booking instead\r\n// Expected: The response should contain the bookingId stored in environment variable \"bookingId\"\r\nconst response = pm.response.json();\r\nconst expectedBookingId = Number(pm.environment.get(\"bookingId\"));\r\n\r\npm.test(\"Correct booking id present\", () => {\r\n    let found = false;\r\n    for(let i = 0; i < response.length; i++) {\r\n        if(response[i].bookingid === expectedBookingId){\r\n            found = true;\r\n            break;\r\n        }\r\n    }\r\n    pm.expect(found).to.be.true;\r\n})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkin={{checkIn}}&checkout={{checkOut}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkin",
+                  "value": "{{checkIn}}"
+                },
+                {
+                  "key": "checkout",
+                  "value": "{{checkOut}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update first name for booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n})\r\n\r\nconst schema = {\r\n    \"type\": \"object\",\r\n    \"booking\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"firstname\": { \r\n                \"type\": \"string\" },\r\n            \"lastname\": {\r\n                \"type\": \"string\" },\r\n            \"totalprice\": {\r\n                \"type\": \"number\"},\r\n            \"depositpaid\": {\r\n                \"type\": \"boolean\"\r\n            },\r\n            \"bookingdates\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                    \"checkin\": {\r\n                        \"type\": \"string\" },\r\n                    \"checkout\": {\r\n                        \"type\": \"string\" },\r\n                    }\r\n                },\r\n            \"additionalneeds\": {\r\n                \"type\": \"string\"\r\n            },\r\n        }\r\n    }\r\n};\r\n\r\npm.test(\"Schema is valid\", () => {\r\n    pm.response.to.have.jsonSchema(schema);\r\n})\r\n\r\nconst response = pm.response.json();\r\n\r\nif(response){\r\n    pm.environment.set(\"firstName\", response.firstname);\r\n}\r\n\r\npm.test(\"Correct data is returned\", () => {\r\n    const expectedFirstName = pm.environment.get(\"firstName\");\r\n    const expectedLastName = pm.environment.get(\"lastName\");\r\n    const expectedTotalPrice = Number(pm.environment.get(\"totalPrice\"));\r\n    const expectedDepositPaid = Boolean(pm.environment.get(\"depositPaid\"));\r\n    const expectedCheckInDate = pm.environment.get(\"checkIn\");\r\n    const expectedCheckOutDate = pm.environment.get(\"checkOut\");\r\n    const expectedAddtionalInformation = pm.environment.get(\"additionalNeeds\");\r\n\r\n    pm.expect(response.firstname).to.eql(expectedFirstName);\r\n    pm.expect(response.lastname).to.eql(expectedLastName);\r\n    pm.expect(response.totalprice).to.eql(expectedTotalPrice);\r\n    pm.expect(response.depositpaid).to.eql(expectedDepositPaid);\r\n    pm.expect(response.bookingdates.checkin).to.eql(expectedCheckInDate);\r\n    pm.expect(response.bookingdates.checkout).to.eql(expectedCheckOutDate);\r\n    pm.expect(response.additionalneeds).to.eql(expectedAddtionalInformation);\r\n})"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{bookingId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update all booking details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r\n    pm.response.to.have.status(200);\r\n})\r\n\r\nconst schema = {\r\n    \"type\": \"object\",\r\n    \"booking\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"firstname\": { \r\n                \"type\": \"string\" },\r\n            \"lastname\": {\r\n                \"type\": \"string\" },\r\n            \"totalprice\": {\r\n                \"type\": \"number\"},\r\n            \"depositpaid\": {\r\n                \"type\": \"boolean\"\r\n            },\r\n            \"bookingdates\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                    \"checkin\": {\r\n                        \"type\": \"string\" },\r\n                    \"checkout\": {\r\n                        \"type\": \"string\" },\r\n                    }\r\n                },\r\n            \"additionalneeds\": {\r\n                \"type\": \"string\"\r\n            },\r\n        }\r\n    }\r\n};\r\n\r\npm.test(\"Schema is valid\", () => {\r\n    pm.response.to.have.jsonSchema(schema);\r\n})\r\n\r\nconst response = pm.response.json();\r\nconst request = JSON.parse(pm.request.body.raw);\r\n\r\npm.test(\"Request data matches the response\", () => {\r\n    pm.expect(response.firstname).to.eql(request.firstname);\r\n    pm.expect(response.lastname).to.eql(request.lastname);\r\n    pm.expect(response.totalprice).to.eql(request.totalprice);\r\n    pm.expect(response.depositpaid).to.eql(request.depositpaid);\r\n    pm.expect(response.bookingdates.checkin).to.eql(request.bookingdates.checkin);\r\n    pm.expect(response.bookingdates.checkout).to.eql(request.bookingdates.checkout);\r\n    pm.expect(response.additionalneeds).to.eql(request.additionalneeds);\r\n})\r\n\r\nif(response.booking){\r\n    pm.environment.set(\"bookingId\", response.bookingid);\r\n    pm.environment.set(\"firstName\", response.booking.firstname);\r\n    pm.environment.set(\"lastName\", response.booking.lastname);\r\n    pm.environment.set(\"totalPrice\", response.booking.totalprice);\r\n    pm.environment.set(\"depositPaid\", response.booking.depositpaid);\r\n    pm.environment.set(\"additionalNeeds\", response.booking.additionalneeds);\r\n}"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const moment = require('moment');\r\n\r\nlet recentDate = pm.variables.replaceIn(\"{{$randomDateRecent}}\");\r\nlet futureDate = pm.variables.replaceIn(\"{{$randomDateFuture}}\");\r\n\r\nrecentDate = moment(recentDate).format(\"YYYY-MM-DD\");\r\nfutureDate = moment(futureDate).format(\"YYYY-MM-DD\");\r\n\r\npm.environment.set(\"checkIn\", recentDate);\r\npm.environment.set(\"checkOut\", futureDate);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\": \"{{$randomFirstName}}\",\r\n    \"lastname\": \"{{$randomLastName}}\",\r\n    \"totalprice\": {{$randomInt}},\r\n    \"depositpaid\": {{$randomBoolean}},\r\n    \"bookingdates\": {\r\n        \"checkin\": \"{{checkIn}}\",\r\n        \"checkout\": \"{{checkOut}}\"\r\n    },\r\n    \"additionalneeds\": \"{{$randomProduct}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{bookingId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// BUG: /booking/:id returns `201 Created` instead of '204 No Content'\r\npm.test(\"Status code is 204\", () => {\r\n    pm.response.to.have.status(204);\r\n});\r\n\r\npm.test(\"Response body is 'Created'\", () => {\r\n    pm.expect(pm.response.text()).to.be.empty;\r\n});\r\n\r\npm.test(\"Reset the enviroment variables\", () => {\r\n    const keys = [\"bookingId\", \"firstName\", \"lastName\", \"totalPrice\", \"depositPaid\", \"checkIn\", \"checkOut\", \"additionalNeeds\"]\r\n\r\n    keys.forEach(key => pm.environment.unset(key));\r\n\r\n    pm.expect(pm.environment.get(\"bookingId\")).to.be.undefined;\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{bookingId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

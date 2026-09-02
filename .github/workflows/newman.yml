@@ -1,0 +1,35 @@
+name: RestfulBooker API Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v6
+      with:
+        node-version: lts/*
+
+    - name: Install Newman
+      run: npm install -g newman newman-reporter-htmlextra
+
+    - name: Run Postman collection
+      run:  newman run postman/RestfulBooker_API.postman_collection.json \
+            -e postman/RestfulBooker_Dev.postman_environment.json \
+            -r "cli,htmlextra" \
+            --reporter-htmlextra-export newman-report.html
+
+    - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: newman-report.html
+          retention-days: 30
