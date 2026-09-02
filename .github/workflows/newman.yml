@@ -20,6 +20,9 @@ jobs:
     - name: Install Newman
       run: npm install -g newman newman-reporter-htmlextra
 
+    - name: Print environment file
+      run: cat postman/RestfulBooker_Dev.postman_environment.json
+
     - name: Run Postman collection
       continue-on-error: true
       run:  newman run postman/RestfulBooker_API.postman_collection.json \
