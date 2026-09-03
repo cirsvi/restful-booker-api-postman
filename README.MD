@@ -33,7 +33,7 @@ In total, there were **67 assertions** and **28 (42%) of them failed**:
 
 ## Known Defects
 
-During testing, 16 defects were identified and documented. Each bug report includes preconditions, steps to reproduce, and expected vs actual results.
+During testing, **16 defects were identified** and documented. Each bug report includes preconditions, steps to reproduce, and expected vs actual results.
 
 See the **[Bug Report Overview](/bugs/bugs-overview.md)** for the full list.
 
@@ -51,8 +51,7 @@ Majority of the defects are due to misleading status codes returned with the res
 - Optionally: **Git**
 
 ### 1. Download the files
-- Download individual .json files with collection and environment from `/postman` folder OR clone repository using Git:
-
+- Download individual .json files of collection and environment from `/postman` folder OR clone repository using Git:
 ```
 git clone https://github.com/cirsvi/restful-booker-api-postman.git
 ```
