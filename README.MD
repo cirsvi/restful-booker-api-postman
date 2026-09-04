@@ -84,7 +84,7 @@ The pipeline installs **Newman** and the **htmlextra** reporter, runs the full P
 ## Repository Structure
 - **`.github/workflows/`**: GitHub Actions CI pipeline definitions.
 - **`bugs/`**: Detailed bug reports with evidence and an overview.
-    - **[`bugs-overview.md`](/bugs/bugs-overview.md)** - Full list of bugs by feature.
-    - **`bug-reports/`** – Detailed bug report files (one per bug).
+    - **[`bugs-overview.md`](/bugs/bugs-overview.md)**: Full list of bugs by feature.
+    - **`bug-reports/`**: Detailed bug report files (one per bug).
 - **`attachments/`**: Screenshots used in the `README.md`.
 - **`postman/`**: Contains Postman test collection and environment.
